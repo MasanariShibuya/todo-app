@@ -28,12 +28,20 @@
 
 <script setup lang="ts">
 import { ref } from "vue";
+import { useFetch } from "#app";
 
-// サーバーから TODO を取得
-const { data: todos, refresh } = useFetch("/api/todos");
+// ✅ 型定義を追加
+interface Todo {
+  id: string; // Firestore の ID は string
+  text: string;
+  done: boolean;
+}
+
+// ✅ 型を明示して `useFetch` を使用
+const { data: todos, refresh } = useFetch<Todo[]>("/api/todos");
 const newTodo = ref("");
 
-// サーバーに新しい TODO を追加
+// ✅ TODO を追加する
 const addTodo = async () => {
   if (!newTodo.value.trim()) return;
   await $fetch("/api/todos", {
@@ -44,8 +52,8 @@ const addTodo = async () => {
   refresh();
 };
 
-// TODO の完了状態を切り替え
-const toggleDone = async (todo: { id: number; done: boolean }) => {
+// ✅ TODO の完了状態を切り替える
+const toggleDone = async (todo: Todo) => {
   await $fetch(`/api/todos/${todo.id}`, {
     method: "PATCH",
     body: { done: !todo.done },
@@ -53,10 +61,10 @@ const toggleDone = async (todo: { id: number; done: boolean }) => {
   refresh();
 };
 
-// TODO を削除する
-const removeTodo = async (id: number) => {
-  await $fetch(`/api/todos/${id}`, { 
-    method: "DELETE" 
+// ✅ TODO を削除する
+const removeTodo = async (id: string) => {
+  await $fetch(`/api/todos/${id}`, {
+    method: "DELETE",
   });
   refresh();
 };

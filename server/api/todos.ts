@@ -1,37 +1,23 @@
-// サーバー側の型定義とグローバル変数の初期化
-interface Todo {
-    id: number;
-    text: string;
-    done: boolean;
+import { db } from "~/plugins/firebase";
+import { collection, getDocs, addDoc } from "firebase/firestore";
+
+export default defineEventHandler(async (event) => {
+  const method = event.req.method;
+
+  // ✅ TODOリストを取得（GET）
+  if (method === "GET") {
+    const todosSnapshot = await getDocs(collection(db, "todos"));
+    const todos = todosSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return todos;
   }
-  
-  declare global {
-    var todos: Todo[];
+
+  // ✅ 新しいTODOを追加（POST）
+  if (method === "POST") {
+    const body = await readBody(event);
+    const newTodo = { text: body.text, done: false };
+    const docRef = await addDoc(collection(db, "todos"), newTodo);
+    return { id: docRef.id, ...newTodo };
   }
-  
-  globalThis.todos = globalThis.todos || [];
-  
-  // API ハンドラー
-  export default defineEventHandler(async (event) => {
-    const method = event.req.method;
-  
-    // GET: 全TODOリストの取得
-    if (method === "GET") {
-      return globalThis.todos;
-    }
-    
-    // POST: 新しいTODOの追加
-    if (method === "POST") {
-      const body = await readBody(event);
-      const newTodo: Todo = {
-        id: Date.now(),
-        text: body.text,
-        done: false,
-      };
-      globalThis.todos.push(newTodo);
-      return newTodo;
-    }
-    
-    return { error: "Method not allowed on /api/todos" };
-  });
-  
+
+  return { error: "Method not allowed on /api/todos" };
+});
