@@ -1,71 +1,66 @@
 <template>
-  <div class="max-w-lg mx-auto mt-10 p-5 bg-white shadow rounded-lg">
-    <h1 class="text-2xl font-bold mb-4">TODOアプリ</h1>
-    <form @submit.prevent="addTodo">
-      <input
-        v-model="newTodo"
-        type="text"
-        placeholder="新しいTODO"
-        class="border p-2 w-full rounded"
-      />
-      <button class="mt-2 bg-blue-500 text-white px-4 py-2 rounded">追加</button>
-    </form>
+  <div class="min-h-screen bg-gray-100">
+    <div class="max-w-2xl mx-auto py-8">
+      <h1 class="text-3xl font-bold text-center mb-4">Todo App</h1>
+      
+      <!-- Todo Input -->
+      <form @submit.prevent="addTodo" class="mb-4 flex space-x-2">
+        <input
+          v-model="newTodo"
+          type="text"
+          class="w-full p-2 border rounded"
+          placeholder="Add a new todo"
+        />
+        <button type="submit" class="p-2 bg-blue-500 text-white rounded">Add</button>
+      </form>
 
-    <ul class="mt-4">
-      <li
-        v-for="todo in todos"
-        :key="todo.id"
-        class="flex justify-between items-center bg-gray-100 p-2 my-1 rounded"
-      >
-        <span :class="{ 'line-through': todo.done }" @click="toggleDone(todo)">
-          {{ todo.text }}
-        </span>
-        <button @click="removeTodo(todo.id)" class="text-red-500">削除</button>
-      </li>
-    </ul>
+      <!-- Todo List -->
+      <ul class="space-y-2">
+        <li v-for="todo in todos" :key="todo.id" class="flex justify-between items-center p-2 bg-white shadow rounded">
+          <span>{{ todo.text }}</span>
+          <button @click="deleteTodo(todo.id)" class="text-red-500">Delete</button>
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-import { useFetch } from "#app";
+import { ref, onMounted } from 'vue'
+import { useAsyncData } from 'nuxt/app'
 
-// ✅ 型定義を追加
-interface Todo {
-  id: string; // Firestore の ID は string
+type Todo = {
+  id: string;
   text: string;
-  done: boolean;
+};
+
+const newTodo = ref('')
+const todos = ref<Todo[]>([])
+
+const fetchTodos = async () => {
+  const { data } = await useAsyncData<Todo[]>('todos', () => $fetch('/api/todos'))
+  todos.value = data.value || []
 }
 
-// ✅ 型を明示して `useFetch` を使用
-const { data: todos, refresh } = useFetch<Todo[]>("/api/todos");
-const newTodo = ref("");
-
-// ✅ TODO を追加する
 const addTodo = async () => {
-  if (!newTodo.value.trim()) return;
-  await $fetch("/api/todos", {
-    method: "POST",
-    body: { text: newTodo.value },
-  });
-  newTodo.value = "";
-  refresh();
-};
+  if (newTodo.value.trim()) {
+    await $fetch('/api/todos', {
+      method: 'POST',
+      body: { text: newTodo.value },
+    })
+    newTodo.value = ''
+    fetchTodos() 
+  }
+}
 
-// ✅ TODO の完了状態を切り替える
-const toggleDone = async (todo: Todo) => {
-  await $fetch(`/api/todos/${todo.id}`, {
-    method: "PATCH",
-    body: { done: !todo.done },
-  });
-  refresh();
-};
+const deleteTodo = async (id: string) => {
+  await $fetch(`/api/todos/${id}`, { method: 'DELETE' })
+  fetchTodos() 
+}
 
-// ✅ TODO を削除する
-const removeTodo = async (id: string) => {
-  await $fetch(`/api/todos/${id}`, {
-    method: "DELETE",
-  });
-  refresh();
-};
+onMounted(fetchTodos)
 </script>
+
+<style scoped>
+/* Add your styles here */
+</style>
