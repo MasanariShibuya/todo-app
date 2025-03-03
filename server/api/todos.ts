@@ -1,30 +1,23 @@
-// server/api/todos.ts
-import { db } from "../utils/firebase";  // パスが正しいことを確認
-
+import { db } from "../utils/firebase";  // ✅ Firestore のインスタンスを取得
 import { collection, getDocs, addDoc, deleteDoc, doc } from "firebase/firestore";
+import { defineEventHandler, getQuery, readBody } from 'h3';
 
-// ここからはFirestoreの操作を行うコード
+// ✅ GET: Todo 一覧を取得
 export default defineEventHandler(async (event) => {
-  if (event.req.method === "GET") {
-    const querySnapshot = await getDocs(collection(db, "todos"));
-    return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  if (event.node.req.method === "GET") {
+    const todosCollection = collection(db, "todos");
+    const snapshot = await getDocs(todosCollection);
+    const todos = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    return todos;
   }
 
-  if (event.req.method === "POST") {
+  // ✅ POST: Todo を追加
+  if (event.node.req.method === "POST") {
     const body = await readBody(event);
-    const docRef = await addDoc(collection(db, "todos"), body);
-    return { id: docRef.id, ...body };
-  }
-
-  if (event.req.method === "DELETE") {
-    const { id } = getQuery(event);
-    if (!id || typeof id !== "string") {
-      throw new Error("Valid ID is required for deletion.");
+    if (!body.text) {
+      throw createError({ statusCode: 400, statusMessage: "Text is required" });
     }
-    
-    const todoRef = doc(collection(db, "todos"), id);
-    await deleteDoc(todoRef);
-    
-    return { message: "Todo deleted" };
+    const docRef = await addDoc(collection(db, "todos"), { text: body.text });
+    return { id: docRef.id, text: body.text };
   }
 });

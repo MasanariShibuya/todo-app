@@ -8,10 +8,6 @@ export default defineNuxtConfig({
     },
   },
 
-  modules: [
-    '@nuxtjs/dotenv', // .envファイルを読み込むために必要
-  ],
-
   runtimeConfig: {
     public: {
       // クライアントサイドで使用する環境変数

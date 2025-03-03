@@ -53,14 +53,20 @@ const addTodo = async () => {
   }
 }
 
+// 🔽 修正ポイント 3 のコードをここに置く
 const deleteTodo = async (id: string) => {
-  await $fetch(`/api/todos/${id}`, { method: 'DELETE' })
-  fetchTodos() 
-}
+  console.log("Deleting todo with ID:", id); // ✅ デバッグ用ログ
+
+  try {
+    const response = await $fetch(`/api/todos/${id}`, { method: 'DELETE' });
+    console.log("Delete response:", response); // ✅ APIのレスポンスを確認
+
+    // ✅ フロントエンド側の配列から削除（API呼び出し後に更新）
+    todos.value = todos.value.filter(todo => todo.id !== id);
+  } catch (error) {
+    console.error("Failed to delete todo:", error); // ✅ エラー時のログ
+  }
+};
 
 onMounted(fetchTodos)
 </script>
-
-<style scoped>
-/* Add your styles here */
-</style>
