@@ -4,7 +4,7 @@
       <h1 class="text-3xl font-bold text-center mb-4">Todo App</h1>
       
       <!-- Todo Input -->
-      <form @submit.prevent="addTodo" class="mb-4 flex space-x-2" v-if="isLoggedIn">
+      <form @submit.prevent="addTodo" class="mb-4 flex space-x-2" v-if="isLoggedIn && !isEditing">
         <input
           v-model="newTodo"
           type="text"
@@ -14,11 +14,24 @@
         <button type="submit" class="p-2 bg-blue-500 text-white rounded">Add</button>
       </form>
 
+      <!-- Todo Edit Form -->
+      <form @submit.prevent="updateTodo" v-if="isEditing" class="mb-4 flex space-x-2">
+        <input
+          v-model="editedTodoText"
+          type="text"
+          class="w-full p-2 border rounded"
+          placeholder="Edit your todo"
+        />
+        <button type="submit" class="p-2 bg-yellow-500 text-white rounded">Update</button>
+        <button @click="cancelEdit" type="button" class="p-2 bg-gray-500 text-white rounded">Cancel</button>
+      </form>
+
       <!-- Todo List -->
       <ul class="space-y-2">
         <li v-for="todo in todos" :key="todo.id" class="flex justify-between items-center p-2 bg-white shadow rounded">
           <span>{{ todo.text }}</span>
           <button @click="deleteTodo(todo.id)" class="text-red-500">Delete</button>
+          <button @click="editTodo(todo)" class="text-blue-500">Edit</button>
         </li>
       </ul>
 
@@ -50,7 +63,7 @@
 import { ref, onMounted } from 'vue';
 import { useNuxtApp } from '#app';
 import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, collection, addDoc, deleteDoc, doc, getDocs } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, deleteDoc, doc, getDocs, updateDoc } from 'firebase/firestore';
 
 const newTodo = ref('');
 const todos = ref<{ id: string; text: string }[]>([]);
@@ -58,6 +71,11 @@ const email = ref('');
 const password = ref('');
 const isLoggedIn = ref(false);  // ログイン状態を管理
 const { $auth } = useNuxtApp();
+
+// 編集用の変数
+const isEditing = ref(false);
+const editedTodoText = ref('');
+const editedTodoId = ref<string | null>(null);
 
 // Firebase Firestoreの初期化
 const db = getFirestore();
@@ -112,14 +130,31 @@ const deleteTodo = async (id: string) => {
   }
 };
 
-// Firebase Authenticationを使ってログイン
-const signIn = async () => {
-  try {
-    await signInWithEmailAndPassword(auth, email.value, password.value);
-    email.value = '';
-    password.value = '';
-  } catch (error) {
-    console.error('Error signing in:', error);
+// TodoをFirestoreで更新
+const updateTodo = async () => {
+  if (editedTodoText.value.trim()) {
+    try {
+      const todoRef = doc(db, 'todos', editedTodoId.value as string);
+      await updateDoc(todoRef, { text: editedTodoText.value });
+      isEditing.value = false;  // 編集モードを終了
+      editedTodoText.value = '';  // 入力をクリア
+      fetchTodos();  // Todoリストを更新
+    } catch (error) {
+      console.error('Error updating todo:', error);
+    }
   }
+};
+
+// 編集モードを開始
+const editTodo = (todo: { id: string; text: string }) => {
+  editedTodoId.value = todo.id;
+  editedTodoText.value = todo.text;
+  isEditing.value = true;
+};
+
+// 編集モードをキャンセル
+const cancelEdit = () => {
+  isEditing.value = false;
+  editedTodoText.value = '';  // 入力をクリア
 };
 </script>
