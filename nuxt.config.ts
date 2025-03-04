@@ -1,5 +1,8 @@
 export default defineNuxtConfig({
   css: ["~/assets/css/tailwind.css"],
+  typescript: {
+    strict: false
+  },
 
   postcss: {
     plugins: {
@@ -30,4 +33,21 @@ export default defineNuxtConfig({
       measurementId: process.env.FIREBASE_MEASUREMENT_ID,
     },
   },
+  
+  plugins: [
+    '~/plugins/authState.client.ts', // ここにプラグインを追加
+  ],
+
+  build: {
+    // transpile: ['@vue/compiler-sfc'],
+  },
+
+  // Viteプラグインの設定をviteキー内で追加
+  vite: {
+    // plugins: [
+    //   require('@vitejs/plugin-vue')(),
+    // ],
+  },
+
+  compatibilityDate: "2025-03-03",
 });
