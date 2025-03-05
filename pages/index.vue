@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-gray-100">
     <div class="max-w-2xl mx-auto py-8">
       <h1 class="text-3xl font-bold text-center mb-4">Todo App</h1>
-      
+
       <!-- Todo Input -->
       <form @submit.prevent="addTodo" class="mb-4 flex space-x-2" v-if="isLoggedIn && !isEditing">
         <input
@@ -28,16 +28,21 @@
 
       <!-- Todo List -->
       <ul class="space-y-2">
-        <li v-for="todo in todos" :key="todo.id" class="flex justify-between items-center p-2 bg-white shadow rounded">
-          <span>{{ todo.text }}</span>
-          <button @click="deleteTodo(todo.id)" class="text-red-500">Delete</button>
-          <button @click="editTodo(todo)" class="text-blue-500">Edit</button>
+        <li v-for="todo in todos" :key="todo.id" class="flex items-center p-2 bg-white shadow rounded">
+          <!-- タスク名を中央揃え -->
+          <span class="flex-1 text-center">{{ todo.text }}</span>
+          <!-- ボタンを右寄せ -->
+          <div class="flex gap-2">
+            <button @click="deleteTodo(todo.id)" class="text-red-500">Delete</button>
+            <button @click="editTodo(todo)" class="text-blue-500">Edit</button>
+          </div>
         </li>
       </ul>
 
-      <!-- Sign In Form -->
+      <!-- Sign In / Sign Up Form -->
       <div v-if="!isLoggedIn" class="flex justify-center">
-        <form @submit.prevent="signIn" class="mb-4 flex flex-col space-y-4 w-full max-w-sm">
+        <form @submit.prevent="isSignUp ? signUp() : signIn()" class="mb-4 flex flex-col space-y-4 w-full max-w-sm">
+          <h2 class="text-xl font-semibold text-center">{{ isSignUp ? "Sign Up" : "Sign In" }}</h2>
           <input
             v-model="email"
             type="email"
@@ -52,7 +57,15 @@
             placeholder="Password"
             required
           />
-          <button type="submit" class="w-full p-2 bg-green-500 text-white rounded">Sign In</button>
+          <button type="submit" class="w-full p-2 bg-green-500 text-white rounded">
+            {{ isSignUp ? "Sign Up" : "Sign In" }}
+          </button>
+          <p class="text-center text-sm">
+            {{ isSignUp ? "Already have an account?" : "Don't have an account?" }}
+            <button @click="isSignUp = !isSignUp" type="button" class="text-blue-500 underline">
+              {{ isSignUp ? "Sign In" : "Sign Up" }}
+            </button>
+          </p>
         </form>
       </div>
     </div>
@@ -62,14 +75,19 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useNuxtApp } from '#app';
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from 'firebase/auth';
-import { getFirestore, collection, addDoc, deleteDoc, doc, getDocs, updateDoc } from 'firebase/firestore';
+import { 
+  getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged 
+} from 'firebase/auth';
+import { 
+  getFirestore, collection, addDoc, deleteDoc, doc, getDocs, updateDoc 
+} from 'firebase/firestore';
 
 const newTodo = ref('');
 const todos = ref<{ id: string; text: string }[]>([]);
 const email = ref('');
 const password = ref('');
 const isLoggedIn = ref(false);  // ログイン状態を管理
+const isSignUp = ref(false); // サインイン/サインアップ切り替え
 const { $auth } = useNuxtApp();
 
 // 編集用の変数
@@ -79,18 +97,16 @@ const editedTodoId = ref<string | null>(null);
 
 // Firebase Firestoreの初期化
 const db = getFirestore();
-
-// Firebase Authenticationの初期化
 const auth = getAuth();
 
 // Authステータスの監視
 onMounted(() => {
   onAuthStateChanged(auth, (user) => {
     if (user) {
-      isLoggedIn.value = true;  // ログインしている場合
-      fetchTodos();  // Todoリストを取得
+      isLoggedIn.value = true;
+      fetchTodos();
     } else {
-      isLoggedIn.value = false;  // ログインしていない場合
+      isLoggedIn.value = false;
     }
   });
 });
@@ -109,11 +125,9 @@ const fetchTodos = async () => {
 const addTodo = async () => {
   if (newTodo.value.trim()) {
     try {
-      await addDoc(collection(db, 'todos'), {
-        text: newTodo.value,
-      });
+      await addDoc(collection(db, 'todos'), { text: newTodo.value });
       newTodo.value = '';
-      fetchTodos();  // Todoリストを更新
+      fetchTodos();
     } catch (error) {
       console.error('Error adding todo:', error);
     }
@@ -124,7 +138,7 @@ const addTodo = async () => {
 const deleteTodo = async (id: string) => {
   try {
     await deleteDoc(doc(db, 'todos', id));
-    todos.value = todos.value.filter(todo => todo.id !== id);  // フロントエンドの配列も更新
+    todos.value = todos.value.filter(todo => todo.id !== id);
   } catch (error) {
     console.error('Error deleting todo:', error);
   }
@@ -136,9 +150,9 @@ const updateTodo = async () => {
     try {
       const todoRef = doc(db, 'todos', editedTodoId.value as string);
       await updateDoc(todoRef, { text: editedTodoText.value });
-      isEditing.value = false;  // 編集モードを終了
-      editedTodoText.value = '';  // 入力をクリア
-      fetchTodos();  // Todoリストを更新
+      isEditing.value = false;
+      editedTodoText.value = '';
+      fetchTodos();
     } catch (error) {
       console.error('Error updating todo:', error);
     }
@@ -155,6 +169,26 @@ const editTodo = (todo: { id: string; text: string }) => {
 // 編集モードをキャンセル
 const cancelEdit = () => {
   isEditing.value = false;
-  editedTodoText.value = '';  // 入力をクリア
+  editedTodoText.value = '';
+};
+
+// サインアップ処理
+const signUp = async () => {
+  try {
+    await createUserWithEmailAndPassword(auth, email.value, password.value);
+    isLoggedIn.value = true;
+  } catch (error) {
+    console.error('Error signing up:', error);
+  }
+};
+
+// サインイン処理
+const signIn = async () => {
+  try {
+    await signInWithEmailAndPassword(auth, email.value, password.value);
+    isLoggedIn.value = true;
+  } catch (error) {
+    console.error('Error signing in:', error);
+  }
 };
 </script>
