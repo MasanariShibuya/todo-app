@@ -11,7 +11,7 @@
           class="w-full p-2 border rounded"
           placeholder="Add a new todo"
         />
-        <button type="submit" class="p-2 bg-blue-500 text-white rounded">Add</button>
+        <button type="submit" class="p-2 bg-cyan-600 text-white rounded hover:bg-blue-600">Add</button>
       </form>
 
       <!-- Todo Edit Form -->
@@ -22,8 +22,8 @@
           class="w-full p-2 border rounded"
           placeholder="Edit your todo"
         />
-        <button type="submit" class="p-2 bg-yellow-500 text-white rounded">Update</button>
-        <button @click="cancelEdit" type="button" class="p-2 bg-gray-500 text-white rounded">Cancel</button>
+        <button type="submit" class="p-2 bg-amber-400 text-white rounded hover:bg-yellow-600">Update</button>
+        <button @click="cancelEdit" type="button" class="p-2 bg-slate-400 text-white rounded hover:bg-gray-600">Cancel</button>
       </form>
 
       <!-- Todo List -->
@@ -34,7 +34,7 @@
           <!-- ボタンを右寄せ -->
           <div class="flex gap-2">
             <button @click="deleteTodo(todo.id)" class="text-red-500">Delete</button>
-            <button @click="editTodo(todo)" class="text-blue-500">Edit</button>
+            <button @click="editTodo(todo)" class="text-emerald-400">Edit</button>
           </div>
         </li>
       </ul>
@@ -57,7 +57,13 @@
             placeholder="Password"
             required
           />
-          <button type="submit" class="w-full p-2 bg-green-500 text-white rounded">
+          <!-- ボタンの色を条件で変更 -->
+          <button 
+            type="submit" 
+            class="w-full p-2 text-white rounded transition 
+              duration-200 ease-in-out"
+            :class="isSignUp ? 'bg-purple-500 hover:bg-purple-600' : 'bg-blue-500 hover:bg-blue-600'"
+          >
             {{ isSignUp ? "Sign Up" : "Sign In" }}
           </button>
           <p class="text-center text-sm">
