@@ -5,16 +5,6 @@ import { getFirestore } from 'firebase/firestore';
 
 export default defineNuxtPlugin((nuxtApp) => {
   const config = useRuntimeConfig(); // 🔹 ここで useRuntimeConfig() を取得
-
-  console.log('Firebase Config:', {
-    apiKey: config.public.firebaseApiKey,
-    authDomain: config.public.firebaseAuthDomain,
-    projectId: config.public.firebaseProjectId,
-    storageBucket: config.public.firebaseStorageBucket,
-    messagingSenderId: config.public.firebaseMessagingSenderId,
-    appId: config.public.firebaseAppId,
-    measurementId: config.public.firebaseMeasurementId,
-  });
   
   const firebaseConfig = {
     apiKey: config.public.firebase.apiKey,
@@ -35,3 +25,27 @@ export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.provide('auth', auth);
   nuxtApp.provide('db', db);
 });
+
+// plugins/firebase.clients.ts の下に追加
+import { addDoc, collection } from "firebase/firestore";
+import { useNuxtApp } from '#app';
+
+export const addTodo = async (todoText: string) => {
+  const { $auth, $db } = useNuxtApp();  // プラグインで提供されたauthとdbを取得
+
+  const user = auth.currentUser; // 現在のログインユーザーを取得
+  if (!user) {
+    console.error("User is not logged in.");
+    return;
+  }
+
+  try {
+    await addDoc(collection(db, `users/${user.uid}/todos`), {
+      text: todoText,
+      createdAt: new Date(),
+    });
+    console.log("Todo added successfully!");
+  } catch (error) {
+    console.error("Error adding todo:", error);
+  }
+};

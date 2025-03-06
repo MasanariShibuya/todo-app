@@ -69,4 +69,15 @@ onMounted(() => {
     console.error('Auth is not initialized');
   }
 });
+
+import { addTodo } from "../plugins/firebase.client";  // 上記で定義したaddTodoをインポート
+
+const todoText = ref("");
+
+const handleAddTodo = () => {
+  if (todoText.value.trim()) {
+    addTodo(todoText.value);  // Todoを追加
+    todoText.value = "";  // フォームをクリア
+  }
+};
 </script>
