@@ -8,13 +8,13 @@ export default defineNuxtPlugin((nuxtApp) => {
   const config = useRuntimeConfig(); // サーバーサイドでuseRuntimeConfigを使用
 
   const firebaseConfig = {
-    apiKey: config.firebase.apiKey,
-    authDomain: config.firebase.authDomain,
-    projectId: config.firebase.projectId,
-    storageBucket: config.firebase.storageBucket,
-    messagingSenderId: config.firebase.messagingSenderId,
-    appId: config.firebase.appId,
-    measurementId: config.firebase.measurementId,
+    apiKey: config.public.firebase.apiKey,
+    authDomain: config.public.firebase.authDomain,
+    projectId: config.public.firebase.projectId,
+    storageBucket: config.public.firebase.storageBucket,
+    messagingSenderId: config.public.firebase.messagingSenderId,
+    appId: config.public.firebase.appId,
+    measurementId: config.public.firebase.measurementId,
   };
 
   // Firebase アプリの初期化

@@ -17,13 +17,13 @@ export default defineNuxtPlugin((nuxtApp) => {
   });
   
   const firebaseConfig = {
-    apiKey: config.public.firebaseApiKey,
-    authDomain: config.public.firebaseAuthDomain,
-    projectId: config.public.firebaseProjectId,
-    storageBucket: config.public.firebaseStorageBucket,
-    messagingSenderId: config.public.firebaseMessagingSenderId,
-    appId: config.public.firebaseAppId,
-    measurementId: config.public.firebaseMeasurementId,
+    apiKey: config.public.firebase.apiKey,
+    authDomain: config.public.firebase.authDomain,
+    projectId: config.public.firebase.projectId,
+    storageBucket: config.public.firebase.storageBucket,
+    messagingSenderId: config.public.firebase.messagingSenderId,
+    appId: config.public.firebase.appId,
+    measurementId: config.public.firebase.measurementId,
   };
 
   // Firebase アプリの初期化
