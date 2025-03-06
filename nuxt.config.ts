@@ -13,16 +13,6 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      // クライアントサイドで使用する環境変数
-      firebaseApiKey: process.env.NUXT_PUBLIC_FIREBASE_API_KEY,
-      firebaseAuthDomain: process.env.NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-      firebaseProjectId: process.env.NUXT_PUBLIC_FIREBASE_PROJECT_ID,
-      firebaseStorageBucket: process.env.NUXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-      firebaseMessagingSenderId: process.env.NUXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-      firebaseAppId: process.env.NUXT_PUBLIC_FIREBASE_APP_ID,
-      firebaseMeasurementId: process.env.NUXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
-    },
-    // サーバーサイドで使用する環境変数
     firebase: {
       apiKey: process.env.NUXT_PUBLIC_FIREBASE_API_KEY,
       authDomain: process.env.NUXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -33,7 +23,7 @@ export default defineNuxtConfig({
       measurementId: process.env.NUXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
     },
   },
-  
+  },
   plugins: [
     '~/plugins/authState.client.ts', // ここにプラグインを追加
   ],
