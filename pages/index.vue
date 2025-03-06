@@ -136,7 +136,7 @@ const addTodo = async () => {
 // タスクを削除（ログインユーザーのタスクのみ削除）
 const deleteTodo = async (id: string) => {
   try {
-    const todoRef = doc(db, 'todos', id);
+    const todoRef = doc(db, `users/${userId.value}/todos`, id);  // 修正箇所
     await deleteDoc(todoRef);
     todos.value = todos.value.filter(todo => todo.id !== id);
   } catch (error) {
@@ -148,7 +148,7 @@ const deleteTodo = async (id: string) => {
 const updateTodo = async () => {
   if (editedTodoText.value.trim() && editedTodoId.value) {
     try {
-      const todoRef = doc(db, 'todos', editedTodoId.value);
+      const todoRef = doc(db, `users/${userId.value}/todos`, editedTodoId.value);  // 修正箇所
       await updateDoc(todoRef, { text: editedTodoText.value });
       isEditing.value = false;
       editedTodoText.value = '';
@@ -158,6 +158,7 @@ const updateTodo = async () => {
     }
   }
 };
+
 
 // 編集モードを開始
 const editTodo = (todo: { id: string; text: string }) => {
