@@ -31,7 +31,7 @@ export default defineNuxtConfig({
   ],
 
   build: {
-    // transpile: ['@vue/compiler-sfc'],
+    transpile: ['@vue/compiler-sfc'],
   },
 
   // Viteプラグインの設定をviteキー内で追加

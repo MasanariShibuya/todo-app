@@ -1,10 +1,12 @@
+// plugins/firebase.client.ts
+
 import { defineNuxtPlugin, useRuntimeConfig } from '#app';
 import { initializeApp } from 'firebase/app';
 import { getAuth, type Auth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 export default defineNuxtPlugin((nuxtApp) => {
-  const config = useRuntimeConfig(); // 🔹 ここで useRuntimeConfig() を取得
+  const config = useRuntimeConfig();
   
   const firebaseConfig = {
     apiKey: config.public.firebase.apiKey,
@@ -18,7 +20,7 @@ export default defineNuxtPlugin((nuxtApp) => {
 
   // Firebase アプリの初期化
   const firebaseApp = initializeApp(firebaseConfig);
-  const auth: Auth = getAuth(firebaseApp); 
+  const auth: Auth = getAuth(firebaseApp);
   const db = getFirestore(firebaseApp);
 
   // Firebase インスタンスを提供
@@ -26,26 +28,34 @@ export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.provide('db', db);
 });
 
-// plugins/firebase.clients.ts の下に追加
-import { addDoc, collection } from "firebase/firestore";
+
+// FirebaseサービスでTodoを追加
+
+import { getDocs, collection, Firestore } from 'firebase/firestore';
 import { useNuxtApp } from '#app';
 
-export const addTodo = async (todoText: string) => {
-  const { $auth, $db } = useNuxtApp();  // プラグインで提供されたauthとdbを取得
+export const getTodos = async () => {
+  const { $auth, $db } = useNuxtApp();
 
-  const user = auth.currentUser; // 現在のログインユーザーを取得
+  const auth = $auth as Auth;
+  const db = $db as Firestore;
+
+  const user = auth.currentUser;
   if (!user) {
     console.error("User is not logged in.");
     return;
   }
 
   try {
-    await addDoc(collection(db, `users/${user.uid}/todos`), {
-      text: todoText,
-      createdAt: new Date(),
+    // ユーザーIDを基にそのユーザーのtodosコレクションからデータを取得
+    const querySnapshot = await getDocs(collection(db, `users/${user.uid}/todos`));
+    querySnapshot.forEach((doc) => {
+      console.log(doc.id, " => ", doc.data());
     });
-    console.log("Todo added successfully!");
   } catch (error) {
-    console.error("Error adding todo:", error);
+    console.error("Error fetching todos:", error);
   }
 };
+
+
+

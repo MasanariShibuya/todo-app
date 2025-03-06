@@ -102,11 +102,12 @@ onMounted(() => {
   });
 });
 
+
 // Firestoreからログイン中のユーザーのタスクのみ取得
 const fetchTodos = async () => {
   if (!userId.value) return;
   try {
-    const q = query(collection(db, 'todos'), where('userId', '==', userId.value)); // userIdでフィルタリング
+    const q = query(collection(db, `users/${userId.value}/todos`));
     const querySnapshot = await getDocs(q);
     todos.value = querySnapshot.docs.map(doc => ({ id: doc.id, text: doc.data().text }));
   } catch (error) {
@@ -118,12 +119,14 @@ const fetchTodos = async () => {
 const addTodo = async () => {
   if (newTodo.value.trim() && userId.value) {
     try {
-      await addDoc(collection(db, 'todos'), {
+      // ユーザーIDに基づいて、そのユーザーの todos コレクションにタスクを追加
+      await addDoc(collection(db, `users/${userId.value}/todos`), {
         text: newTodo.value,
         userId: userId.value, // ユーザーIDを紐付ける
+        createdAt: new Date(),
       });
       newTodo.value = '';
-      fetchTodos();
+      fetchTodos();  // タスク追加後に再取得
     } catch (error) {
       console.error('Error adding todo:', error);
     }
@@ -174,11 +177,20 @@ const cancelEdit = () => {
 const signUp = async () => {
   errorMessage.value = ''; // エラーメッセージをクリア
   try {
-    await createUserWithEmailAndPassword(auth, email.value, password.value);
+    // 新規ユーザーのサインアップ
+    const userCredential = await createUserWithEmailAndPassword(auth, email.value, password.value);
+    const user = userCredential.user;
+
+    // ユーザーの todos コレクションを作成（特に初期化は不要ですが、ユーザーが初めてログインした際に「空の」todosコレクションを確保したい場合）
+    const userTodosRef = collection(db, `users/${user.uid}/todos`);
+    
+    // ユーザー作成後の処理（必要に応じて他の処理）
+    console.log("User created:", user.uid);
   } catch (error: any) {
     errorMessage.value = error.message; // エラーを表示
   }
 };
+
 
 // サインイン処理
 const signIn = async () => {
