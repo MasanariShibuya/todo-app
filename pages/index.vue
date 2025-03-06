@@ -30,12 +30,14 @@
       <!-- Todo Input -->
       <form @submit.prevent="addTodo" class="mb-4 flex space-x-2" v-if="isLoggedIn && !isEditing">
         <input v-model="newTodo" type="text" class="w-full p-2 border rounded" placeholder="Add a new todo" />
+        <input v-model="dueDate" type="date" class="p-2 border rounded" />
         <button type="submit" class="p-2 bg-cyan-600 text-white rounded hover:bg-blue-600">Add</button>
       </form>
 
       <!-- Todo Edit Form -->
       <form @submit.prevent="updateTodo" class="mb-4 flex space-x-2" v-if="isEditing">
         <input v-model="editedTodo" type="text" class="w-full p-2 border rounded" />
+        <input v-model="editedDueDate" type="date" class="p-2 border rounded" />
         <button type="submit" class="p-2 bg-cyan-600 text-white rounded hover:bg-blue-600">Save</button>
         <button type="button" @click="cancelEdit" class="p-2 bg-gray-400 text-white rounded hover:bg-gray-600">Cancel</button>
       </form>
@@ -44,6 +46,7 @@
       <ul class="space-y-2">
         <li v-for="todo in filteredTodos" :key="todo.id" class="flex items-center p-2 bg-white shadow rounded">
           <span class="flex-1 text-center">{{ todo.text }}</span>
+          <span class="text-gray-500 text-sm">{{ todo.dueDate ? new Date(todo.dueDate).toLocaleDateString() : 'No due date' }}</span>
           <select v-model="todo.status" @change="updateTaskStatus(todo.id, todo.status)" class="p-1 border rounded">
             <option value="not_started">未着手</option>
             <option value="in_progress">進行中</option>
@@ -65,8 +68,10 @@ import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, collection, addDoc, deleteDoc, doc, getDocs, updateDoc, query } from 'firebase/firestore';
 
 const newTodo = ref('');
+const dueDate = ref('');
 const editedTodo = ref('');
-const todos = ref<{ id: string; text: string; status: string }[]>([]);
+const editedDueDate = ref('');
+const todos = ref<{ id: string; text: string; status: string; dueDate: string | null }[]>([]);
 const isLoggedIn = ref(false);
 const userId = ref<string | null>(null);
 const activeFilter = ref<'all' | 'not_started' | 'in_progress' | 'completed'>('all');
@@ -97,6 +102,7 @@ const fetchTodos = async () => {
       id: doc.id,
       text: doc.data().text,
       status: doc.data().status || "not_started",
+      dueDate: doc.data().dueDate || null,
     }));
   } catch (error) {
     console.error('Error fetching todos:', error);
@@ -109,9 +115,11 @@ const addTodo = async () => {
       await addDoc(collection(db, `users/${userId.value}/todos`), {
         text: newTodo.value,
         status: "not_started",
+        dueDate: dueDate.value || null,
         createdAt: new Date(),
       });
       newTodo.value = '';
+      dueDate.value = '';
       fetchTodos();
     } catch (error) {
       console.error('Error adding todo:', error);
@@ -119,10 +127,11 @@ const addTodo = async () => {
   }
 };
 
-const editTodo = (todo: { id: string; text: string }) => {
+const editTodo = (todo: { id: string; text: string; dueDate: string | null }) => {
   isEditing.value = true;
   editingTodoId.value = todo.id;
   editedTodo.value = todo.text;
+  editedDueDate.value = todo.dueDate || '';
 };
 
 const updateTodo = async () => {
@@ -130,9 +139,11 @@ const updateTodo = async () => {
   try {
     await updateDoc(doc(db, `users/${userId.value}/todos`, editingTodoId.value), {
       text: editedTodo.value,
+      dueDate: editedDueDate.value || null,
     });
     isEditing.value = false;
     editedTodo.value = '';
+    editedDueDate.value = '';
     editingTodoId.value = null;
     fetchTodos();
   } catch (error) {
@@ -143,6 +154,7 @@ const updateTodo = async () => {
 const cancelEdit = () => {
   isEditing.value = false;
   editedTodo.value = '';
+  editedDueDate.value = '';
   editingTodoId.value = null;
 };
 
