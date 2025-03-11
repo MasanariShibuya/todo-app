@@ -64,6 +64,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { useRouter } from 'vue-router';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, collection, addDoc, deleteDoc, doc, getDocs, updateDoc, query } from 'firebase/firestore';
 
@@ -77,6 +78,7 @@ const userId = ref<string | null>(null);
 const activeFilter = ref<'all' | 'not_started' | 'in_progress' | 'completed'>('all');
 const db = getFirestore();
 const auth = getAuth();
+const router = useRouter();
 const isEditing = ref(false);
 const editingTodoId = ref<string | null>(null);
 
@@ -89,6 +91,8 @@ onMounted(() => {
     } else {
       isLoggedIn.value = false;
       userId.value = null;
+      // ログインしていない場合、ログイン画面にリダイレクト
+      router.push('/login');
     }
   });
 });

@@ -10,7 +10,7 @@ export default defineNuxtPlugin((nuxtApp) => {
   const router = useRouter();
 
   if (!auth) {
-    console.error('Firebase Auth is not available.');
+    console.error('morimori.');
     return;
   }
 

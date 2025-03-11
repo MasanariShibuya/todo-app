@@ -23,6 +23,8 @@ export default defineNuxtPlugin((nuxtApp) => {
   const auth: Auth = getAuth(firebaseApp);
   const db = getFirestore(firebaseApp);
 
+  console.log('Firebase initialized successfully')
+  
   // Firebase インスタンスを提供
   nuxtApp.provide('auth', auth);
   nuxtApp.provide('db', db);
