@@ -34,30 +34,26 @@
         <button type="submit" class="p-2 bg-cyan-600 text-white rounded hover:bg-blue-600">Add</button>
       </form>
 
-      <!-- Todo Edit Form -->
-      <form @submit.prevent="updateTodo" class="mb-4 flex space-x-2" v-if="isEditing">
-        <input v-model="editedTodo" type="text" class="w-full p-2 border rounded" />
-        <input v-model="editedDueDate" type="date" class="p-2 border rounded" />
-        <button type="submit" class="p-2 bg-cyan-600 text-white rounded hover:bg-blue-600">Save</button>
-        <button type="button" @click="cancelEdit" class="p-2 bg-gray-400 text-white rounded hover:bg-gray-600">Cancel</button>
-      </form>
-
       <!-- Todo List -->
       <ul class="space-y-2">
         <li v-for="todo in filteredTodos" :key="todo.id" class="flex items-center p-2 bg-white shadow rounded">
-          <!-- 日付、ステータスをタスク名の前に表示 -->
-          <div class="flex items-center space-x-2">
-            <span class="text-sm text-gray-500">
-              {{ todo.dueDate ? new Date(todo.dueDate).toLocaleDateString() : 'No due date' }}
-            </span>
-            <span class="text-sm text-gray-500">
-              {{ todo.status === 'not_started' ? '未着手' : todo.status === 'in_progress' ? '進行中' : '完了' }}
-            </span>
-          </div>
-          
-          <!-- タスク名 -->
-          <span class="flex-1 text-center">{{ todo.text }}</span>
+          <!-- 日付 -->
+          <span class="text-sm text-gray-500 w-24">
+            {{ todo.dueDate ? new Date(todo.dueDate).toLocaleDateString() : 'No due date' }}
+          </span>
 
+          <!-- ステータス変更ドロップダウン -->
+          <select v-model="todo.status" @change="updateTaskStatus(todo.id, todo.status)"
+            class="p-1 border rounded bg-gray-100 text-gray-700">
+            <option value="not_started">未着手</option>
+            <option value="in_progress">進行中</option>
+            <option value="completed">完了</option>
+          </select>
+
+          <!-- タスク名 -->
+          <span class="flex-1 text-center px-4">{{ todo.text }}</span>
+
+          <!-- 編集・削除ボタン -->
           <div class="flex gap-2">
             <button @click="deleteTodo(todo.id)" class="text-red-500">Delete</button>
             <button @click="editTodo(todo)" class="text-emerald-400">Edit</button>
@@ -73,12 +69,9 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, collection, addDoc, deleteDoc, doc, getDocs, updateDoc, query } from 'firebase/firestore';
-import LogoutButton from '../components/LogoutButton.vue'; // ログアウトボタンコンポーネント
 
 const newTodo = ref('');
 const dueDate = ref('');
-const editedTodo = ref('');
-const editedDueDate = ref('');
 const todos = ref<{ id: string; text: string; status: string; dueDate: string | null }[]>([]);
 const isLoggedIn = ref(false);
 const userId = ref<string | null>(null);
@@ -86,8 +79,6 @@ const activeFilter = ref<'all' | 'not_started' | 'in_progress' | 'completed'>('a
 const db = getFirestore();
 const auth = getAuth();
 const router = useRouter();
-const isEditing = ref(false);
-const editingTodoId = ref<string | null>(null);
 
 onMounted(() => {
   onAuthStateChanged(auth, (user) => {
@@ -98,7 +89,6 @@ onMounted(() => {
     } else {
       isLoggedIn.value = false;
       userId.value = null;
-      // ログインしていない場合、ログイン画面にリダイレクト
       router.push('/login');
     }
   });
@@ -139,34 +129,8 @@ const addTodo = async () => {
 };
 
 const editTodo = (todo: { id: string; text: string; dueDate: string | null }) => {
-  isEditing.value = true;
-  editingTodoId.value = todo.id;
-  editedTodo.value = todo.text;
-  editedDueDate.value = todo.dueDate || '';
-};
-
-const updateTodo = async () => {
-  if (!editingTodoId.value || !editedTodo.value.trim()) return;
-  try {
-    await updateDoc(doc(db, `users/${userId.value}/todos`, editingTodoId.value), {
-      text: editedTodo.value,
-      dueDate: editedDueDate.value || null,
-    });
-    isEditing.value = false;
-    editedTodo.value = '';
-    editedDueDate.value = '';
-    editingTodoId.value = null;
-    fetchTodos();
-  } catch (error) {
-    console.error('Error updating todo:', error);
-  }
-};
-
-const cancelEdit = () => {
-  isEditing.value = false;
-  editedTodo.value = '';
-  editedDueDate.value = '';
-  editingTodoId.value = null;
+  newTodo.value = todo.text;
+  dueDate.value = todo.dueDate || '';
 };
 
 const deleteTodo = async (id: string) => {
@@ -182,7 +146,6 @@ const updateTaskStatus = async (taskId: string, newStatus: string) => {
   if (!userId.value) return;
   try {
     await updateDoc(doc(db, `users/${userId.value}/todos`, taskId), { status: newStatus });
-    fetchTodos();
   } catch (error) {
     console.error("Error updating task status:", error);
   }
