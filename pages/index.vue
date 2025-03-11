@@ -45,13 +45,19 @@
       <!-- Todo List -->
       <ul class="space-y-2">
         <li v-for="todo in filteredTodos" :key="todo.id" class="flex items-center p-2 bg-white shadow rounded">
+          <!-- 日付、ステータスをタスク名の前に表示 -->
+          <div class="flex items-center space-x-2">
+            <span class="text-sm text-gray-500">
+              {{ todo.dueDate ? new Date(todo.dueDate).toLocaleDateString() : 'No due date' }}
+            </span>
+            <span class="text-sm text-gray-500">
+              {{ todo.status === 'not_started' ? '未着手' : todo.status === 'in_progress' ? '進行中' : '完了' }}
+            </span>
+          </div>
+          
+          <!-- タスク名 -->
           <span class="flex-1 text-center">{{ todo.text }}</span>
-          <span class="text-gray-500 text-sm">{{ todo.dueDate ? new Date(todo.dueDate).toLocaleDateString() : 'No due date' }}</span>
-          <select v-model="todo.status" @change="updateTaskStatus(todo.id, todo.status)" class="p-1 border rounded">
-            <option value="not_started">未着手</option>
-            <option value="in_progress">進行中</option>
-            <option value="completed">完了</option>
-          </select>
+
           <div class="flex gap-2">
             <button @click="deleteTodo(todo.id)" class="text-red-500">Delete</button>
             <button @click="editTodo(todo)" class="text-emerald-400">Edit</button>
@@ -67,6 +73,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore, collection, addDoc, deleteDoc, doc, getDocs, updateDoc, query } from 'firebase/firestore';
+import LogoutButton from '../components/LogoutButton.vue'; // ログアウトボタンコンポーネント
 
 const newTodo = ref('');
 const dueDate = ref('');
