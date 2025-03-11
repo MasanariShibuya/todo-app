@@ -1,6 +1,6 @@
 import { db } from "../utils/firebase";  // ✅ Firestore のインスタンスを取得
-import { collection, getDocs, addDoc, deleteDoc, doc } from "firebase/firestore";
-import { defineEventHandler, getQuery, readBody } from 'h3';
+import { collection, getDocs, addDoc } from "firebase/firestore";
+import { defineEventHandler, readBody } from 'h3';
 
 // ✅ GET: Todo 一覧を取得
 export default defineEventHandler(async (event) => {

@@ -18,11 +18,11 @@ export default defineNuxtPlugin((nuxtApp) => {
   };
 
   // Firebase アプリの初期化
-  const firebaseApp = initializeApp(firebaseConfig);
-  const auth: Auth = getAuth(firebaseApp);
-  const db = getFirestore(firebaseApp);
+  // const firebaseApp = initializeApp(firebaseConfig);
+  // const auth: Auth = getAuth(firebaseApp);
+  // const db = getFirestore(firebaseApp);
 
   // Firebase インスタンスを提供
-  nuxtApp.provide('auth', auth);
-  nuxtApp.provide('db', db);
+  // nuxtApp.provide('auth', auth);
+  // nuxtApp.provide('db', db);
 });
