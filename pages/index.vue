@@ -5,22 +5,22 @@
 
       <!-- フィルターボタン -->
       <div class="flex justify-center mb-4 space-x-2">
-        <button @click="activeFilter = 'all'" 
+        <button @click="activeFilter = 'all'"
           :class="activeFilter === 'all' ? 'bg-lime-500 text-white' : 'bg-gray-200 text-gray-700'" 
           class="px-4 py-2 rounded">
           すべて
         </button>
-        <button @click="activeFilter = 'not_started'" 
+        <button @click="activeFilter = 'not_started'"
           :class="activeFilter === 'not_started' ? 'bg-lime-500 text-white' : 'bg-gray-200 text-gray-700'" 
           class="px-4 py-2 rounded">
           未着手
         </button>
-        <button @click="activeFilter = 'in_progress'" 
+        <button @click="activeFilter = 'in_progress'"
           :class="activeFilter === 'in_progress' ? 'bg-lime-500 text-white' : 'bg-gray-200 text-gray-700'" 
           class="px-4 py-2 rounded">
           進行中
         </button>
-        <button @click="activeFilter = 'completed'" 
+        <button @click="activeFilter = 'completed'"
           :class="activeFilter === 'completed' ? 'bg-lime-500 text-white' : 'bg-gray-200 text-gray-700'" 
           class="px-4 py-2 rounded">
           完了
@@ -28,10 +28,15 @@
       </div>
 
       <!-- Todo Input -->
-      <form @submit.prevent="addTodo" class="mb-4 flex space-x-2" v-if="isLoggedIn && !isEditing">
+      <form @submit.prevent="isEditing ? updateTodo() : addTodo()" class="mb-4 flex space-x-2" v-if="isLoggedIn">
         <input v-model="newTodo" type="text" class="w-full p-2 border rounded" placeholder="Add a new todo" />
         <input v-model="dueDate" type="date" class="p-2 border rounded" />
-        <button type="submit" class="p-2 bg-cyan-600 text-white rounded hover:bg-blue-600">Add</button>
+        <button type="submit"
+          class="p-2 text-white rounded hover:bg-blue-600"
+          :class="isEditing ? 'bg-green-500' : 'bg-cyan-600'">
+          {{ isEditing ? 'Save' : 'Add' }}
+        </button>
+        <button v-if="isEditing" @click="cancelEdit" class="p-2 bg-gray-400 text-white rounded">Cancel</button>
       </form>
 
       <!-- Todo List -->
@@ -79,6 +84,8 @@ const activeFilter = ref<'all' | 'not_started' | 'in_progress' | 'completed'>('a
 const db = getFirestore();
 const auth = getAuth();
 const router = useRouter();
+const isEditing = ref(false);
+const editingTodoId = ref<string | null>(null);
 
 onMounted(() => {
   onAuthStateChanged(auth, (user) => {
@@ -129,8 +136,37 @@ const addTodo = async () => {
 };
 
 const editTodo = (todo: { id: string; text: string; dueDate: string | null }) => {
+  isEditing.value = true;
+  editingTodoId.value = todo.id;
   newTodo.value = todo.text;
   dueDate.value = todo.dueDate || '';
+};
+
+const updateTodo = async () => {
+  if (!editingTodoId.value || !userId.value) return;
+
+  try {
+    await updateDoc(doc(db, `users/${userId.value}/todos`, editingTodoId.value), {
+      text: newTodo.value,
+      dueDate: dueDate.value || null,
+    });
+
+    isEditing.value = false;
+    editingTodoId.value = null;
+    newTodo.value = '';
+    dueDate.value = '';
+
+    fetchTodos();
+  } catch (error) {
+    console.error('Error updating todo:', error);
+  }
+};
+
+const cancelEdit = () => {
+  isEditing.value = false;
+  editingTodoId.value = null;
+  newTodo.value = '';
+  dueDate.value = '';
 };
 
 const deleteTodo = async (id: string) => {
