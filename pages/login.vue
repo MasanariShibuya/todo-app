@@ -1,10 +1,8 @@
 <template>
   <div class="flex items-center justify-center min-h-screen bg-gray-100">
     <div class="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-lg">
-      <h1 class="text-center text-2xl font-bold" v-if="!isSignUp">ログイン</h1>
-      <h1 class="text-center text-2xl font-bold" v-if="isSignUp">サインアップ</h1>
+      <h1 class="text-center text-2xl font-bold">{{ isSignUp ? 'サインアップ' : 'ログイン' }}</h1>
 
-      <!-- フォーム送信時に適切な処理を呼び出す -->
       <form @submit.prevent="handleSubmit" class="space-y-4">
         <!-- Email -->
         <div>
@@ -54,23 +52,32 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 
 const email = ref('');
 const password = ref('');
 const isSignUp = ref(false); // サインアップ画面かログイン画面かを切り替える
 const router = useRouter();
+const auth = getAuth();
 
+// **ログイン済みならトップページへリダイレクト**
+onMounted(() => {
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      router.push('/'); // すでにログイン済みならトップページへ
+    }
+  });
+});
+
+// **フォームの切り替え**
 const toggleForm = () => {
   isSignUp.value = !isSignUp.value;
 };
 
-// フォーム送信時の処理
+// **フォーム送信時の処理**
 const handleSubmit = async () => {
-  console.log('フォーム送信開始');
-  
   if (isSignUp.value) {
     await signup();
   } else {
@@ -78,40 +85,25 @@ const handleSubmit = async () => {
   }
 };
 
+// **ログイン処理**
 const login = async () => {
-  console.log("ログイン処理開始");
   try {
-    const auth = getAuth();
-    console.log("認証開始");
-
-    console.log(auth);
-    console.log(email.value);
-    console.log(password.value);
-    debugger;
-
     await signInWithEmailAndPassword(auth, email.value, password.value);
-    console.log("ログイン成功");
-    router.push('/'); // ログイン後にトップページに遷移
+    router.push('/'); // ログイン後にトップページへ
   } catch (error: any) {
-    console.error('ログインエラー:', error.code, error.message); // エラーコードも表示
+    console.error('ログインエラー:', error.code, error.message);
     alert('ログインに失敗しました');
   }
 };
 
+// **サインアップ処理**
 const signup = async () => {
-  console.log("サインアップ処理開始");
-  const auth = getAuth();
   try {
     await createUserWithEmailAndPassword(auth, email.value, password.value);
-    console.log("サインアップ成功");
-    router.push('/'); // サインアップ成功後にトップページに遷移
+    router.push('/'); // サインアップ成功後にトップページへ
   } catch (error) {
     console.error('サインアップエラー:', error);
     alert('サインアップに失敗しました');
   }
 };
 </script>
-
-<style scoped>
-/* カスタムスタイルがあれば追加 */
-</style>
