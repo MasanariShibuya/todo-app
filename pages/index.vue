@@ -2,26 +2,30 @@
   <div class="min-h-screen bg-gray-100">
     <div class="max-w-2xl mx-auto py-8">
       <h1 class="text-3xl font-bold text-center mb-4">Todo App</h1>
-
+      <div>
+        <router-view />
+        <!-- ログインしている場合にログアウトボタンを表示 -->
+        <LogoutButton v-if="isLoggedIn" />
+      </div>
       <!-- フィルターボタン -->
       <div class="flex justify-center mb-4 space-x-2">
         <button @click="activeFilter = 'all'"
-          :class="activeFilter === 'all' ? 'bg-lime-500 text-white' : 'bg-gray-200 text-gray-700'" 
+          :class="activeFilter === 'all' ? 'bg-lime-500 text-white' : 'bg-gray-200 text-gray-700'"
           class="px-4 py-2 rounded">
           すべて
         </button>
         <button @click="activeFilter = 'not_started'"
-          :class="activeFilter === 'not_started' ? 'bg-lime-500 text-white' : 'bg-gray-200 text-gray-700'" 
+          :class="activeFilter === 'not_started' ? 'bg-lime-500 text-white' : 'bg-gray-200 text-gray-700'"
           class="px-4 py-2 rounded">
           未着手
         </button>
         <button @click="activeFilter = 'in_progress'"
-          :class="activeFilter === 'in_progress' ? 'bg-lime-500 text-white' : 'bg-gray-200 text-gray-700'" 
+          :class="activeFilter === 'in_progress' ? 'bg-lime-500 text-white' : 'bg-gray-200 text-gray-700'"
           class="px-4 py-2 rounded">
           進行中
         </button>
         <button @click="activeFilter = 'completed'"
-          :class="activeFilter === 'completed' ? 'bg-lime-500 text-white' : 'bg-gray-200 text-gray-700'" 
+          :class="activeFilter === 'completed' ? 'bg-lime-500 text-white' : 'bg-gray-200 text-gray-700'"
           class="px-4 py-2 rounded">
           完了
         </button>
@@ -31,8 +35,7 @@
       <form @submit.prevent="isEditing ? updateTodo() : addTodo()" class="mb-4 flex space-x-2" v-if="isLoggedIn">
         <input v-model="newTodo" type="text" class="w-full p-2 border rounded" placeholder="Add a new todo" />
         <input v-model="dueDate" type="date" class="p-2 border rounded" />
-        <button type="submit"
-          class="p-2 text-white rounded hover:bg-blue-600"
+        <button type="submit" class="p-2 text-white rounded hover:bg-blue-600"
           :class="isEditing ? 'bg-green-500' : 'bg-cyan-600'">
           {{ isEditing ? 'Save' : 'Add' }}
         </button>

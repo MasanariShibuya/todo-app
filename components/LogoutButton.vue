@@ -1,6 +1,6 @@
 <!-- ~/components/LogoutButton.vue -->
 <template>
-  <button @click="logout" class="bg-stone-500 text-white p-2 rounded">ログアウト</button>
+  <button @click="logout" class="absolute top-4 right-4 px-4 py-2 bg-stone-500 text-white p-2 rounded">ログアウト</button>
 </template>
 
 <script setup>
