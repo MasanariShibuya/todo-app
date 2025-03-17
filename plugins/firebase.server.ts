@@ -23,6 +23,6 @@ export default defineNuxtPlugin((nuxtApp) => {
   // const db = getFirestore(firebaseApp);
 
   // Firebase インスタンスを提供
-  // nuxtApp.provide('auth', auth);
-  // nuxtApp.provide('db', db);
+   nuxtApp.provide('auth', auth);
+   nuxtApp.provide('db', db);
 });
