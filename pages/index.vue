@@ -5,7 +5,7 @@
       <div class="flex justify-end">
         <LogoutButton v-if="isLoggedIn" />
       </div>
-      
+
       <!-- フィルターボタン -->
       <div class="flex justify-center mb-4 space-x-2 flex-wrap">
         <button @click="activeFilter = 'all'"
@@ -31,45 +31,56 @@
       </div>
 
       <!-- Todo Input -->
-      <form @submit.prevent="isEditing ? updateTodo() : addTodo()" class="mb-4 flex space-x-2" v-if="isLoggedIn">
+      <form @submit.prevent="isEditing ? updateTodo() : addTodo()" class="mb-4 flex flex-col sm:flex-row gap-2" v-if="isLoggedIn">
         <input v-model="newTodo" type="text" class="w-full p-2 border rounded focus:outline-none" placeholder="新しいタスクを追加" />
-        <input v-model="dueDate" type="date" class="p-2 border rounded focus:outline-none" :min="today" />
-        <button type="submit" class="p-2 text-white rounded hover:bg-blue-600"
+
+        <!-- 日付入力フィールド（カレンダーマーク付き） -->
+        <div class="relative w-full sm:w-auto">
+          <input v-model="dueDate" type="date" class="w-full p-2 pl-10 border rounded focus:outline-none" :min="today" />
+          <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">📅</span>
+        </div>
+
+        <button type="submit" class="p-2 text-white rounded hover:bg-blue-600 w-full sm:w-auto"
           :class="isEditing ? 'bg-green-500' : 'bg-cyan-600'">
           {{ isEditing ? '保存' : '追加' }}
         </button>
-        <button v-if="isEditing" @click="cancelEdit" class="p-2 bg-gray-400 text-white rounded">キャンセル</button>
+        <button v-if="isEditing" @click="cancelEdit" class="p-2 bg-gray-400 text-white rounded w-full sm:w-auto">キャンセル</button>
       </form>
 
       <!-- Todo List -->
       <ul class="space-y-2">
-        <li v-for="todo in filteredTodos" :key="todo.id" class="flex items-center p-3 bg-white shadow rounded-md">
-          <!-- 日付 -->
-          <span class="text-sm text-gray-500 w-24">
-            {{ todo.dueDate ? new Date(todo.dueDate).toLocaleDateString() : '期限なし' }}
-          </span>
+        <li v-for="todo in filteredTodos" :key="todo.id" class="p-3 bg-white shadow rounded-md">
+          <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+            <!-- タスクの期限とステータスを縦並びに -->
+            <div class="flex flex-col w-full sm:w-24">
+              <span class="text-sm text-gray-500 text-center sm:text-left">
+                {{ todo.dueDate ? new Date(todo.dueDate).toLocaleDateString() : '期限なし' }}
+              </span>
+              <select v-model="todo.status" @change="updateTaskStatus(todo.id, todo.status)"
+                class="p-1 border rounded bg-gray-100 text-gray-700 focus:outline-none w-full">
+                <option value="not_started">未着手</option>
+                <option value="in_progress">進行中</option>
+                <option value="completed">完了</option>
+              </select>
+            </div>
 
-          <!-- ステータス変更ドロップダウン -->
-          <select v-model="todo.status" @change="updateTaskStatus(todo.id, todo.status)"
-            class="p-1 border rounded bg-gray-100 text-gray-700 focus:outline-none">
-            <option value="not_started">未着手</option>
-            <option value="in_progress">進行中</option>
-            <option value="completed">完了</option>
-          </select>
+            <!-- タスク名 -->
+            <span class="flex-1 text-left px-2 sm:px-4 break-words whitespace-normal">
+              {{ todo.text }}
+            </span>
 
-          <!-- タスク名 -->
-          <span class="flex-1 text-center px-4">{{ todo.text }}</span>
-
-          <!-- 編集・削除ボタン -->
-          <div class="flex gap-2">
-            <button @click="deleteTodo(todo.id)" class="text-red-500 hover:underline">削除</button>
-            <button @click="editTodo(todo)" class="text-emerald-400 hover:underline">編集</button>
+            <!-- 編集・削除ボタンを縦並びに -->
+            <div class="flex flex-col gap-1">
+              <button @click="editTodo(todo)" class="text-emerald-400 hover:underline">編集</button>
+              <button @click="deleteTodo(todo.id)" class="text-red-500 hover:underline">削除</button>
+            </div>
           </div>
         </li>
       </ul>
     </div>
   </div>
 </template>
+
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
