@@ -27,6 +27,7 @@ export default defineNuxtConfig({
   },
   
   plugins: [
+    '~/plugins/firebase.client.ts',
     '~/plugins/authState.client.ts', // ここにプラグインを追加
   ],
 
