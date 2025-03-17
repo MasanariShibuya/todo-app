@@ -55,23 +55,29 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { useRouter } from 'vue-router';
-
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
+import { useRouter, useNuxtApp } from '#app';
 
 const email = ref('');
 const password = ref('');
-const isSignUp = ref(false); // サインアップ画面かログイン画面かを切り替える
+const isSignUp = ref(false);
 const router = useRouter();
+const { $auth } = useNuxtApp(); // useNuxtApp から $auth を取得
 
+if (!$auth) {
+  throw new Error('Firebase Auth が正しく初期化されていません');
+}
+
+// 型を明示
+const auth = $auth as import('firebase/auth').Auth;
+
+// **toggleForm を定義**
 const toggleForm = () => {
   isSignUp.value = !isSignUp.value;
 };
 
-// フォーム送信時の処理
+
 const handleSubmit = async () => {
-  console.log('フォーム送信開始');
-  
   if (isSignUp.value) {
     await signup();
   } else {
@@ -80,37 +86,25 @@ const handleSubmit = async () => {
 };
 
 const login = async () => {
-  console.log("ログイン処理開始");
   try {
-    const auth = getAuth();
-    console.log("認証開始");
-
-    console.log(auth);
-    console.log(email.value);
-    console.log(password.value);
-    debugger;
-
     await signInWithEmailAndPassword(auth, email.value, password.value);
-    console.log("ログイン成功");
-    router.push('/'); // ログイン後にトップページに遷移
+    router.push('/');
   } catch (error: any) {
-    console.error('ログインエラー:', error.code, error.message); // エラーコードも表示
+    console.error('ログインエラー:', error.code, error.message);
     alert('ログインに失敗しました');
   }
 };
 
 const signup = async () => {
-  console.log("サインアップ処理開始");
-  const auth = getAuth();
   try {
     await createUserWithEmailAndPassword(auth, email.value, password.value);
-    console.log("サインアップ成功");
-    router.push('/'); // サインアップ成功後にトップページに遷移
+    router.push('/');
   } catch (error) {
     console.error('サインアップエラー:', error);
     alert('サインアップに失敗しました');
   }
 };
+
 </script>
 
 <style scoped>
