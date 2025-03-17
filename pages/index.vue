@@ -2,9 +2,7 @@
   <div class="min-h-screen bg-gray-100">
     <div class="max-w-2xl mx-auto py-8">
       <h1 class="text-3xl font-bold text-center mb-4">Todo App</h1>
-      <div>
-        <router-view />
-        <!-- ログインしている場合にログアウトボタンを表示 -->
+      <div class="flex justify-end">
         <LogoutButton v-if="isLoggedIn" />
       </div>
       <!-- フィルターボタン -->
@@ -34,7 +32,7 @@
       <!-- Todo Input -->
       <form @submit.prevent="isEditing ? updateTodo() : addTodo()" class="mb-4 flex space-x-2" v-if="isLoggedIn">
         <input v-model="newTodo" type="text" class="w-full p-2 border rounded" placeholder="Add a new todo" />
-        <input v-model="dueDate" type="date" class="p-2 border rounded" />
+        <input v-model="dueDate" type="date" class="p-2 border rounded" :min="today" />
         <button type="submit" class="p-2 text-white rounded hover:bg-blue-600"
           :class="isEditing ? 'bg-green-500' : 'bg-cyan-600'">
           {{ isEditing ? 'Save' : 'Add' }}
@@ -89,6 +87,7 @@ const auth = getAuth();
 const router = useRouter();
 const isEditing = ref(false);
 const editingTodoId = ref<string | null>(null);
+const today = new Date().toISOString().split('T')[0]; // 今日の日付を取得
 
 onMounted(() => {
   onAuthStateChanged(auth, (user) => {
