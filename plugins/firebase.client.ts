@@ -31,33 +31,6 @@ export default defineNuxtPlugin((nuxtApp) => {
 });
 
 
-// FirebaseサービスでTodoを追加
-
-import { getDocs, collection, Firestore } from 'firebase/firestore';
-import { useNuxtApp } from '#app';
-
-export const getTodos = async () => {
-  const { $auth, $db } = useNuxtApp();
-
-  const auth = $auth as Auth;
-  const db = $db as Firestore;
-
-  const user = auth.currentUser;
-  if (!user) {
-    console.error("User is not logged in.");
-    return;
-  }
-
-  try {
-    // ユーザーIDを基にそのユーザーのtodosコレクションからデータを取得
-    const querySnapshot = await getDocs(collection(db, `users/${user.uid}/todos`));
-    querySnapshot.forEach((doc) => {
-      console.log(doc.id, " => ", doc.data());
-    });
-  } catch (error) {
-    console.error("Error fetching todos:", error);
-  }
-};
 
 
 
