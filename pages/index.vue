@@ -1,56 +1,57 @@
 <template>
   <div class="min-h-screen bg-gray-100">
-    <div class="max-w-2xl mx-auto py-8">
+    <div class="max-w-2xl mx-auto py-8 px-4 sm:px-6">
       <h1 class="text-3xl font-bold text-center mb-4">Todo App</h1>
       <div class="flex justify-end">
         <LogoutButton v-if="isLoggedIn" />
       </div>
+      
       <!-- フィルターボタン -->
-      <div class="flex justify-center mb-4 space-x-2">
+      <div class="flex justify-center mb-4 space-x-2 flex-wrap">
         <button @click="activeFilter = 'all'"
           :class="activeFilter === 'all' ? 'bg-lime-500 text-white' : 'bg-gray-200 text-gray-700'"
-          class="px-4 py-2 rounded">
+          class="px-4 py-2 rounded focus:outline-none">
           すべて
         </button>
         <button @click="activeFilter = 'not_started'"
           :class="activeFilter === 'not_started' ? 'bg-lime-500 text-white' : 'bg-gray-200 text-gray-700'"
-          class="px-4 py-2 rounded">
+          class="px-4 py-2 rounded focus:outline-none">
           未着手
         </button>
         <button @click="activeFilter = 'in_progress'"
           :class="activeFilter === 'in_progress' ? 'bg-lime-500 text-white' : 'bg-gray-200 text-gray-700'"
-          class="px-4 py-2 rounded">
+          class="px-4 py-2 rounded focus:outline-none">
           進行中
         </button>
         <button @click="activeFilter = 'completed'"
           :class="activeFilter === 'completed' ? 'bg-lime-500 text-white' : 'bg-gray-200 text-gray-700'"
-          class="px-4 py-2 rounded">
+          class="px-4 py-2 rounded focus:outline-none">
           完了
         </button>
       </div>
 
       <!-- Todo Input -->
       <form @submit.prevent="isEditing ? updateTodo() : addTodo()" class="mb-4 flex space-x-2" v-if="isLoggedIn">
-        <input v-model="newTodo" type="text" class="w-full p-2 border rounded" placeholder="Add a new todo" />
-        <input v-model="dueDate" type="date" class="p-2 border rounded" :min="today" />
+        <input v-model="newTodo" type="text" class="w-full p-2 border rounded focus:outline-none" placeholder="新しいタスクを追加" />
+        <input v-model="dueDate" type="date" class="p-2 border rounded focus:outline-none" :min="today" />
         <button type="submit" class="p-2 text-white rounded hover:bg-blue-600"
           :class="isEditing ? 'bg-green-500' : 'bg-cyan-600'">
-          {{ isEditing ? 'Save' : 'Add' }}
+          {{ isEditing ? '保存' : '追加' }}
         </button>
-        <button v-if="isEditing" @click="cancelEdit" class="p-2 bg-gray-400 text-white rounded">Cancel</button>
+        <button v-if="isEditing" @click="cancelEdit" class="p-2 bg-gray-400 text-white rounded">キャンセル</button>
       </form>
 
       <!-- Todo List -->
       <ul class="space-y-2">
-        <li v-for="todo in filteredTodos" :key="todo.id" class="flex items-center p-2 bg-white shadow rounded">
+        <li v-for="todo in filteredTodos" :key="todo.id" class="flex items-center p-3 bg-white shadow rounded-md">
           <!-- 日付 -->
           <span class="text-sm text-gray-500 w-24">
-            {{ todo.dueDate ? new Date(todo.dueDate).toLocaleDateString() : 'No due date' }}
+            {{ todo.dueDate ? new Date(todo.dueDate).toLocaleDateString() : '期限なし' }}
           </span>
 
           <!-- ステータス変更ドロップダウン -->
           <select v-model="todo.status" @change="updateTaskStatus(todo.id, todo.status)"
-            class="p-1 border rounded bg-gray-100 text-gray-700">
+            class="p-1 border rounded bg-gray-100 text-gray-700 focus:outline-none">
             <option value="not_started">未着手</option>
             <option value="in_progress">進行中</option>
             <option value="completed">完了</option>
@@ -61,8 +62,8 @@
 
           <!-- 編集・削除ボタン -->
           <div class="flex gap-2">
-            <button @click="deleteTodo(todo.id)" class="text-red-500">Delete</button>
-            <button @click="editTodo(todo)" class="text-emerald-400">Edit</button>
+            <button @click="deleteTodo(todo.id)" class="text-red-500 hover:underline">削除</button>
+            <button @click="editTodo(todo)" class="text-emerald-400 hover:underline">編集</button>
           </div>
         </li>
       </ul>
@@ -194,3 +195,18 @@ const filteredTodos = computed(() => {
   return todos.value.filter(todo => todo.status === activeFilter.value);
 });
 </script>
+
+<style scoped>
+/* スマホ用にパディングやマージン調整 */
+@media (max-width: 640px) {
+  .p-4 {
+    padding: 1rem;
+  }
+  .mb-4 {
+    margin-bottom: 1rem;
+  }
+  .text-3xl {
+    font-size: 1.75rem;
+  }
+}
+</style>
