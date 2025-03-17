@@ -62,20 +62,15 @@ const email = ref('');
 const password = ref('');
 const isSignUp = ref(false);
 const router = useRouter();
-const { $auth } = useNuxtApp(); // useNuxtApp から $auth を取得
+const { $auth } = useNuxtApp();
 
-if (!$auth) {
-  throw new Error('Firebase Auth が正しく初期化されていません');
-}
-
-// 型を明示
+// Firebase Authentication の型を明示
 const auth = $auth as import('firebase/auth').Auth;
 
 // **toggleForm を定義**
 const toggleForm = () => {
   isSignUp.value = !isSignUp.value;
 };
-
 
 const handleSubmit = async () => {
   if (isSignUp.value) {
@@ -104,8 +99,8 @@ const signup = async () => {
     alert('サインアップに失敗しました');
   }
 };
-
 </script>
+
 
 <style scoped>
 /* カスタムスタイルがあれば追加 */
