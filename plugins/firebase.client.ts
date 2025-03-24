@@ -3,7 +3,7 @@
 import { defineNuxtPlugin, useRuntimeConfig } from '#app';
 import { initializeApp } from 'firebase/app';
 import { getAuth, type Auth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
+import { getFirestore, Firestore } from 'firebase/firestore';
 
 export default defineNuxtPlugin((nuxtApp) => {
   const config = useRuntimeConfig();
@@ -21,17 +21,11 @@ export default defineNuxtPlugin((nuxtApp) => {
   // Firebase アプリの初期化
   const firebaseApp = initializeApp(firebaseConfig);
   const auth: Auth = getAuth(firebaseApp);
-  const db = getFirestore(firebaseApp);
-
-  console.log('Firebase initialized successfully')
+  const db: Firestore = getFirestore(firebaseApp);
   
   //ksksksks
   // Firebase インスタンスを提供
   nuxtApp.provide('auth', auth);
   nuxtApp.provide('db', db);
 });
-
-
-
-
 

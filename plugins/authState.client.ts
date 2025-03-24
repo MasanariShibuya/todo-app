@@ -1,12 +1,12 @@
 // plugins/authState.client.ts
 import { defineNuxtPlugin } from '#app';
 import { onAuthStateChanged, type Auth } from 'firebase/auth';
-import { useAuthUser } from '~/composables/useAuthuser';
+// import { useAuthUser } from '~/composables/useAuthuser';
 import { useRouter } from 'vue-router';
 
 export default defineNuxtPlugin((nuxtApp) => {
   const auth = nuxtApp.$auth as Auth; // Firebase Auth インスタンスを取得
-  const authUser = useAuthUser();
+  const authUser = ref<{ uid: string; email: string } | null>(null);
   const router = useRouter();
 
   if (!auth) {
